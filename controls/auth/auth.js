@@ -64,6 +64,7 @@ const updateUserInfo = async (req, res) => {
     email: "",
     oldPass: "",
     newPass: "",
+    confirmPass: "",
   };
   if (!reqBody.userName) {
     errors.userName = "Please enter your Name";
@@ -73,33 +74,56 @@ const updateUserInfo = async (req, res) => {
     errors.email = "Please enter your Email";
     return res.status(400).json(errors);
   }
-  if (!reqBody.oldPass) {
+  if (!reqBody.oldPass && reqBody.changePass == "true") {
     errors.oldPass = "Please enter your Old Password";
     return res.status(400).json(errors);
   }
-  if (!reqBody.newPass) {
+  if (!reqBody.newPass && reqBody.changePass == "true") {
     errors.newPass = "Please enter your new password";
     return res.status(400).json(errors);
   }
-  if (reqBody.newPass.length < 6) {
+  if (reqBody.newPass.length < 6 && reqBody.changePass == "true") {
     errors.newPass = "New Password should be at least 6 characters";
     return res.status(400).json(errors);
   }
-  if (reqBody.oldPass != user.password) {
+
+  if (reqBody.oldPass != user.password && reqBody.changePass == "true") {
     errors.oldPass = "Old password is incorrect";
     return res.status(400).json(errors);
   }
+  if (!reqBody.confirmPass && reqBody.changePass == "true") {
+    errors.confirmPass = "Please confirm new password";
+    return res.status(400).json(errors);
+  }
+  if (reqBody.newPass != reqBody.confirmPass && reqBody.changePass == "true") {
+    errors.confirmPass =
+      "Passwords are different!, please confirm password correctly";
+    return res.status(400).json(errors);
+  }
   if (!reqFiles) {
-    await SignUp.updateOne(
-      { _id: reqBody._id },
-      {
-        $set: {
-          userName: reqBody.userName,
-          email: reqBody.email,
-          password: reqBody.newPass,
-        },
-      }
-    );
+    if (reqBody.changePass == "true") {
+      await SignUp.updateOne(
+        { _id: reqBody._id },
+        {
+          $set: {
+            userName: reqBody.userName,
+            email: reqBody.email,
+            password: reqBody.newPass,
+          },
+        }
+      );
+    } else {
+      await SignUp.updateOne(
+        { _id: reqBody._id },
+        {
+          $set: {
+            userName: reqBody.userName,
+            email: reqBody.email,
+          },
+        }
+      );
+    }
+
     return res.json({ message: "Profile Updated Successfully!" });
   } else {
     // Upload Photo
@@ -110,17 +134,30 @@ const updateUserInfo = async (req, res) => {
         return res.status(500).json({ status: "error", message: "error" });
     });
     reqBody.profileImg = `${process.env.BACKEND_HOST}/${fileName}`;
-    await SignUp.updateOne(
-      { _id: reqBody._id },
-      {
-        $set: {
-          userName: reqBody.userName,
-          email: reqBody.email,
-          password: reqBody.newPass,
-          profileImg: reqBody.profileImg,
-        },
-      }
-    );
+    if (reqBody.changePass == "true") {
+      await SignUp.updateOne(
+        { _id: reqBody._id },
+        {
+          $set: {
+            userName: reqBody.userName,
+            email: reqBody.email,
+            password: reqBody.newPass,
+            profileImg: reqBody.profileImg,
+          },
+        }
+      );
+    } else {
+      await SignUp.updateOne(
+        { _id: reqBody._id },
+        {
+          $set: {
+            userName: reqBody.userName,
+            email: reqBody.email,
+            profileImg: reqBody.profileImg,
+          },
+        }
+      );
+    }
     return res.json({ message: "Profile Updated Successfully!" });
   }
 };
