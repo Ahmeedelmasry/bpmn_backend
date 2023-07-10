@@ -14,7 +14,7 @@ const app = express();
 //Handle Cors and Middleware
 app.use((req, res, next) => {
   res
-    .header("Access-Control-Allow-Origin", 'https://bpmn-project-a48ed.web.app')
+    .header("Access-Control-Allow-Origin", 'https://bpmnproject-9be05.web.app')
     .header("Access-Control-Allow-Methods", "GET, POST, HEAD, PUT, DELETE")
     .header(
       "Access-Control-Allow-Headers",
